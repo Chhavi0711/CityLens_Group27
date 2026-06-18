@@ -1,0 +1,152 @@
+# CityLens Group 3 — Execution Plan & Team Assignments
+# 4 Days to Submission (Deadline: 22 June 2026, 24:00)
+
+============================================================
+  DAY 1 — TODAY: SETUP & DATA  (All members)
+============================================================
+
+EVERYONE (first 2 hours):
+  [ ] Share this repo with all team members — agree on one GitHub repo
+  [ ] Install dependencies: pip install -r requirements.txt
+  [ ] Confirm CCTV dataset access (VPN if off-campus)
+  [ ] Open the shared Google Sheet and note exact category names for Group 3
+  [ ] Create a free Roboflow account at https://app.roboflow.com
+  [ ] Get Roboflow API key → Settings → API Key
+  [ ] Run: export ROBOFLOW_API_KEY="your_key_here"
+
+MEMBER 1 (Vehicle + Signal models):
+  [ ] python download_data.py --task vehicle
+  [ ] python download_data.py --task signal
+  [ ] Inspect downloaded data: check images/train, images/val, data.yaml
+  [ ] Start training: python train.py --task vehicle
+  [ ] While vehicle trains → python train.py --task signal (in another terminal)
+
+MEMBER 2 (Helmet + Seatbelt models):
+  [ ] python download_data.py --task helmet
+  [ ] python download_data.py --task seatbelt
+  [ ] Start training: python train.py --task helmet
+  [ ] While helmet trains → python train.py --task seatbelt
+
+MEMBER 3 (Wrong-way + Signal jump logic):
+  [ ] Read detect.py — understand is_wrong_way() and check_signal_violation()
+  [ ] Request CCTV dataset access from organizers
+  [ ] Extract 50-100 frames from CCTV footage for initial testing
+  [ ] Test detect.py on a few sample frames (will use fallback model first)
+  [ ] Adjust stop_line_y parameter based on actual camera angle
+
+MEMBER 4 (Data sourcing + annotation):
+  [ ] Browse Roboflow Universe for any additional Indian traffic datasets
+      → https://universe.roboflow.com/search?q=indian+traffic
+  [ ] If CCTV data is insufficient, annotate extra frames using:
+      → LabelImg: https://github.com/heartexlabs/labelImg (free, local)
+      → OR Roboflow Annotate (web-based, free tier)
+  [ ] Focus annotation effort on: signal_jump, wrong_way (hardest to find data for)
+
+MEMBER 5 (Documentation lead):
+  [ ] Fill in team names in README.md
+  [ ] Set up output/ folder, confirm CSV + JSON logging works
+  [ ] Create the ZIP folder structure for final submission
+  [ ] Track which deliverables are done vs pending (use checklist below)
+
+============================================================
+  DAY 2 — MODEL TUNING + INTEGRATION
+============================================================
+
+MEMBERS 1 & 2:
+  [ ] Check training results: look at runs/ folder for training plots
+  [ ] If mAP50 < 85%:
+        → Try heavier model: change "yolov8n.pt" → "yolov8s.pt" in train.py
+        → Increase epochs to 50
+        → Check class imbalance in dataset
+  [ ] Run: python evaluate.py to see per-model metrics
+
+MEMBER 3:
+  [ ] Integrate trained weights into detect.py (update MODEL_WEIGHTS paths)
+  [ ] Run detect.py on CCTV test footage
+  [ ] Tune CONFIDENCE_THRESHOLD if too many false positives (raise to 0.55)
+  [ ] Capture 10-15 sample output frames with good violations visible
+
+MEMBER 4:
+  [ ] If any model is underperforming, source additional data:
+      → HELMET: https://universe.roboflow.com/traffic-violation-ed8ag/bike-helmet-detection-2vdjo-nkdyo
+      → SIGNAL: https://universe.roboflow.com/search?q=traffic+light+red+green
+      → WRONG WAY: Annotate from CCTV manually (20-30 examples is enough to fine-tune)
+  [ ] Merge extra data with existing dataset (add images to train/ folder, update data.yaml nc if needed)
+
+MEMBER 5:
+  [ ] Collect input frames (20-30 representative frames) for submission deliverable #3
+  [ ] Save output frames with visible bounding boxes for deliverable #4
+  [ ] Start filling bounding_boxes.csv manually for at least 10 frames as backup
+
+============================================================
+  DAY 3 — FINAL PIPELINE + OUTPUT GENERATION
+============================================================
+
+ALL MEMBERS:
+  [ ] Run full pipeline end-to-end on CCTV footage
+  [ ] Run: python evaluate.py → confirm all models ≥85% mAP50
+  [ ] Generate all required output files:
+        output/annotated_frames/    ← at least 30 frames
+        output/bounding_boxes.csv   ← all detections logged
+        output/violations_log.json  ← all violations logged
+  [ ] Review bounding_boxes.csv: confirm x, y, width, height are correct
+  [ ] Spot-check 5-10 output frames visually — bounding boxes should look right
+
+BONUS (if time allows):
+  [ ] Add debris area estimation (pixel area of bounding box as proxy)
+  [ ] Count violations per track_id (repeat offenders)
+  [ ] Add a simple summary: violations per hour, most common type
+
+============================================================
+  DAY 4 — SUBMISSION DAY (22 June)
+============================================================
+
+  [ ] python evaluate.py → save final evaluation_report.json
+  [ ] Fill in metrics table in README.md with actual numbers
+  [ ] Confirm all 7 required deliverables (see below)
+  [ ] Zip everything: zip -r citylens_group3_submission.zip citylens_g3/
+  [ ] Share code repo with judges (add arjun.mitra@airawat.org as collaborator)
+  [ ] Submit before 24:00 — don't wait till the last minute!
+
+============================================================
+  SUBMISSION CHECKLIST (all 7 required)
+============================================================
+
+  [ ] 1. Code repository — shared with judges (GitHub)
+  [ ] 2. README.md — includes weights location, architecture, metrics table
+  [ ] 3. Input frames — 20-30 sample frames from training/testing (images/)
+  [ ] 4. Output frames — annotated frames with bounding boxes (output/annotated_frames/)
+  [ ] 5. Bounding box CSV — output/bounding_boxes.csv (x, y, width, height per frame)
+  [ ] 6. External references — listed in README (Roboflow, COCO, papers)
+  [ ] 7. Code comments — detect.py, train.py have inline comments throughout
+
+  BONUS (extra points):
+  [ ] 8. Analytics feature set — violation counts, area estimates
+  [ ] 9. Links to additional datasets sourced — add to README
+
+============================================================
+  ESCALATION / IF THINGS GO WRONG
+============================================================
+
+Training accuracy too low (<70% after 30 epochs):
+  → Switch base model to yolov8s.pt (heavier, more accurate)
+  → Add more augmentation: set mosaic=1.0, mixup=0.2 in train.py
+  → Check data.yaml — make sure class names match exactly
+
+No GPU, training is too slow:
+  → Use Google Colab (free T4 GPU): upload train.py + data, run there
+  → Reduce epochs to 15 for a quick baseline, improve if time allows
+  → Use yolov8n.pt (fastest model)
+
+Can't access CCTV data:
+  → Email arjun.mitra@airawat.org immediately
+  → Meanwhile, test on open dashcam datasets from Roboflow
+
+Wrong-way detection not working:
+  → Check camera orientation assumption in is_wrong_way()
+  → If camera faces SAME direction as traffic, flip the condition:
+     return (late_y - early_y) > (frame_h * 0.05)
+
+Signal detection too many false positives:
+  → Increase CONFIDENCE_THRESHOLD to 0.60 in detect.py
+  → Narrow the signal ROI to where the traffic light actually appears in frame

@@ -1,0 +1,16 @@
+# CityLens AI Hackathon 2026 — Group 3
+# Install with: pip install -r requirements.txt
+
+ultralytics>=8.0.0       # YOLOv8 — detection + training
+supervision>=0.18.0      # ByteTrack object tracking
+roboflow>=1.1.0          # dataset download from Roboflow Universe
+opencv-python>=4.8.0     # image and video processing
+numpy>=1.24.0            # array operations
+torch>=2.0.0             # PyTorch backend (auto-installed with ultralytics)
+torchvision>=0.15.0      # vision utilities
+Pillow>=9.0.0            # image I/O
+PyYAML>=6.0              # data.yaml parsing
+matplotlib>=3.7.0        # training plots
+seaborn>=0.12.0          # confusion matrix plots
+pandas>=2.0.0            # metrics + CSV handling
+tqdm>=4.65.0             # progress bars
